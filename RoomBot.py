@@ -10,43 +10,56 @@ class RoomBot(Bot):
         super().__init__('https://api.telegram.org/bot',
                          '528234666:AAEIjbiELzdwLWs3Q79eIiS-8w2qwYp9K9U')
 
-    def default_command(self, command, data):
-        data['text'] = "и так тоже не умею"
-        return None, data, '/sendMessage'
+    def default_command(self, info):
+        message = "и так тоже не умею"
+        self.send_message(info['chat']['id'], message)
 
-    def on_message_received(self, command_str, data):
-        parse = command_str.split(" ")
-        if parse[0] == "Привет" or command_str[0] == "привет":
-            data['text'] += "дратути"
+    def on_message_received(self, info):
+        parse = info['text'].split(" ")
+        if parse[0] == "Привет" or parse[0] == "привет":
+            message = "дратути"
         else:
-            data['text'] += "так я не умею"
-        return None, data, '/sendMessage'
+            message = "так я не умею"
+        self.send_message(info['chat']['id'], message)
 
-    def on_temp_command(self, command, data):
+    def on_temp_command(self, info):
         humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, 21)
-        data['text'] += "температура <b>%s °C</b>, влажность <b>%s %%</b>" % \
-                        (str(temperature), str(humidity))
-        return None, data, '/sendMessage'
+        message = "температура <b>%s °C</b>, влажность <b>%s %%</b>" % (str(temperature),
+                                                                        str(humidity))
+        self.send_message(info['chat']['id'], message)
 
-    def on_photo_command(self, command, data):
+    def on_photo_command(self, info):
         img = imread("img.png")
-        files, request_type = self.send_photo(img)
-        return files, data, request_type
+        self.send_photo(info['chat']['id'], img, "амурский тигр")
 
-    def on_start_command(self, command, data):
-        data['text'] += "Добрый вечур!"
-        return None, data, '/sendMessage'
+    def on_start_command(self, info):
+        message = "Добрый вечур!"
+        self.send_message(info['chat']['id'], message)
 
-    def on_photo_received(self, update, data):
-        img = self.get_photo(update)
+
+    def on_help_command(self, info):
+        message = """
+я бот котрый создан для управления комнатой моего Создателя
+на данный момент я умею:
+/temp - температура и влажность в комнате
+/photo - фото амурского тигра
+
+если мне отправить фото с пометкой чб - я сделаю фотографию черно-белой.
+
+существую ли я? 
+
+я на github - https://github.com/ElijahOvcharenko/telegram_bot
+мой Cоздатель @IndigoIlya
+        """
+        self.send_message(info['chat']['id'], message)
+
+    def on_photo_received(self, info):
+        img = info['photo']
         if img is not None:
-            data['caption'] = "повторюха муха"
-            if 'caption' in update['message']:
-                if update['message']['caption'].strip() == "чб":
-                    img_f = img_as_float(img)
-                    img_f = (img_f[:, :, 0] + img_f[:, :, 1] + img_f[:, :, 2]) / 3
-                    img = img_as_ubyte(np.clip(img_f, 0, 1))
-                    data['caption'] += " - чб"
-
-            files, request_type = self.send_photo(img)
-            return files, data, request_type
+            caption = "повторюха муха"
+            if info['caption'].strip() == "чб":
+                img_f = img_as_float(img)
+                img_f = (img_f[:, :, 0] + img_f[:, :, 1] + img_f[:, :, 2]) / 3
+                img = img_as_ubyte(np.clip(img_f, 0, 1))
+                caption += " - чб"
+            self.send_photo(info['chat']['id'], img, caption)
