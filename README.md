@@ -40,7 +40,7 @@ Bot(url, token, update_frequency=1) где:
 * on_<название_команды>_command(info)
 
     info - словарь который содержат информацию про текущее сообщение, содержит такие поля как:
-    'text', 'data', 'chat', 'message_id', 'from' которые идентичны таковым в[обекте Message](https://core.telegram.org/bots/api#message)
+    'text', 'data', 'chat', 'message_id', 'from' которые идентичны таковым в [обекте Message](https://core.telegram.org/bots/api#message)
 
 Существует несколько всторенных команд, которые можно реализовать в своем классе:
 * default_command(info) - вызывется если ни одна комманда не подходит под запрос пользователя,
